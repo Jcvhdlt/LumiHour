@@ -1,4 +1,6 @@
 val esiosApiKey: String = project.findProperty("ESIOS_API_KEY") as String? ?: ""
+println("ESIOS_API_KEY = $esiosApiKey")
+
 
 plugins {
     alias(libs.plugins.android.application)
