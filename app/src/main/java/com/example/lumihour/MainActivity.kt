@@ -1,3 +1,5 @@
+package com.example.lumihour
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,10 +12,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.example.lumihour.ui.theme.LumiHourTheme
 import com.example.lumihour.viewmodel.MainViewModel
-
+import com.example.lumihour.ui.MainScreen  // <-- ESTE IMPORT FALTABA
 
 class MainActivity : ComponentActivity() {
-
 
     private val mainViewModel: MainViewModel by viewModels()
 
