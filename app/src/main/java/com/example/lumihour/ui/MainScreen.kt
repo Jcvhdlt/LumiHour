@@ -1,7 +1,8 @@
 package com.example.lumihour.ui
 
+import PriceUiState
 import androidx.compose.runtime.Composable
-import com.example.lumihour.viewmodel.PriceUiState
+
 
 @Composable
 fun MainScreen(

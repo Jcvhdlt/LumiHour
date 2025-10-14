@@ -1,3 +1,5 @@
+val esiosApiKey: String = project.findProperty("ESIOS_API_KEY") as String? ?: ""
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -14,7 +16,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
+        buildConfigField("String", "ESIOS_API_KEY",  "\"$esiosApiKey\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -36,7 +38,9 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
+    buildToolsVersion = "35.0.0"
 }
 
 dependencies {
@@ -63,6 +67,7 @@ dependencies {
     // Coroutines para manejar operaciones asíncronas
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
+
 
 
 

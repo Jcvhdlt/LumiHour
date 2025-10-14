@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.example.lumihour.ui.theme.LumiHourTheme
 import com.example.lumihour.viewmodel.MainViewModel
-import com.example.lumihour.ui.MainScreen  // <-- ESTE IMPORT FALTABA
+import com.example.lumihour.ui.MainScreen
 
 class MainActivity : ComponentActivity() {
 

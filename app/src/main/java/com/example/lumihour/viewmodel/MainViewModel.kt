@@ -11,11 +11,16 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+
 class MainViewModel : ViewModel() {
 
     // 1. Estados para el cálculo
     private val _kwhInput = MutableStateFlow("")
     val kwhInput: StateFlow<String> = _kwhInput
+
+    // TODO: reemplazar API
+    private val apiToken = BuildConfig.ESIOS_API_KEY
+
 
     private val _estimatedCost = MutableStateFlow<Double?>(null)
     val estimatedCost: StateFlow<Double?> = _estimatedCost
@@ -45,8 +50,8 @@ class MainViewModel : ViewModel() {
     // Flujo público que la UI puede observar, pero no modificar
     val uiState: StateFlow<PriceUiState> = _uiState
 
-  // TODO: reemplazar API
-    private val apiToken = "Bearer TU_TOKEN_DE_LA_API"
+
+
 
     init {
         // Llamamos a la función para obtener los precios en cuanto se crea el ViewModel
