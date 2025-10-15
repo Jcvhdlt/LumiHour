@@ -12,64 +12,51 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-
 class MainViewModel : ViewModel() {
 
-    // 1. Estados para el cálculo
+    // --- Estados para el cálculo ---
     private val _kwhInput = MutableStateFlow("")
     val kwhInput: StateFlow<String> = _kwhInput
-
-    // TODO: reemplazar API
-    private val apiToken = BuildConfig.ESIOS_API_KEY
-
 
     private val _estimatedCost = MutableStateFlow<Double?>(null)
     val estimatedCost: StateFlow<Double?> = _estimatedCost
 
-    // 2. Función para actualizar el texto de entrada
+    // --- Estado de la UI para los precios ---
+    private val _uiState = MutableStateFlow<PriceUiState>(PriceUiState.Loading)
+    val uiState: StateFlow<PriceUiState> = _uiState
+
+    // Inicializa la carga de datos al crear el ViewModel
+    init {
+        fetchPricesForToday()
+    }
+
+    // --- Funciones para la interacción con la UI ---
     fun onKwhInputChange(text: String) {
         _kwhInput.value = text
-        // Borramos el cálculo anterior si se cambia el valor
         _estimatedCost.value = null
     }
 
-    // 3. Función para realizar el cálculo
     fun calculateCost() {
         val kwh = _kwhInput.value.toDoubleOrNull()
         val currentState = _uiState.value
 
-        // Solo calculamos si tenemos los datos y la entrada es válida
         if (kwh != null && currentState is PriceUiState.Success) {
-            // El precio de la API viene en €/MWh, lo pasamos a €/kWh dividiendo por 1000
             val pricePerKwh = currentState.currentPrice / 1000
             _estimatedCost.value = pricePerKwh * kwh
         }
     }
 
-    // Flujo de datos privado que podemos modificar
-    private val _uiState = MutableStateFlow<PriceUiState>(PriceUiState.Loading)
-    // Flujo público que la UI puede observar, pero no modificar
-    val uiState: StateFlow<PriceUiState> = _uiState
-
-
-
-
-    init {
-        // Llamamos a la función para obtener los precios en cuanto se crea el ViewModel
-        fetchPricesForToday()
-    }
-
+    // --- Lógica de red ---
     fun fetchPricesForToday() {
-        // Usamos el scope del ViewModel para lanzar una corrutina segura
         viewModelScope.launch {
-            _uiState.value = PriceUiState.Loading // Ponemos el estado en "cargando"
+            _uiState.value = PriceUiState.Loading
             try {
-                // Obtenemos la fecha en el formato que pide la API ("AAAA-MM-DD")
                 val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
 
-                // Llamamos a la API a través de Retrofit
+                // *** CORRECCIÓN CLAVE ***
+                // Llama al método corregido con 'x-api-key'
                 val response = RetrofitClient.instance.getElectricityPrices(
-                    token = apiToken,
+                    apiKey = BuildConfig.ESIOS_API_KEY, // Pasa la clave con el nombre de parámetro 'apiKey'
                     startDate = today,
                     endDate = today
                 )
@@ -78,18 +65,14 @@ class MainViewModel : ViewModel() {
                     val prices = response.body()!!.indicator.values
 
                     if (prices.isNotEmpty()) {
-                        // Procesamos los datos
                         val cheapestHour = prices.minByOrNull { it.value }!!
                         val mostExpensiveHour = prices.maxByOrNull { it.value }!!
 
-                        // Buscamos el precio de la hora actual
                         val currentHour = LocalTime.now().hour
                         val currentPriceData = prices.firstOrNull { priceValue ->
-                            // El campo 'datetime' viene en formato UTC, lo convertimos para comparar horas
                             ZonedDateTime.parse(priceValue.datetime).hour == currentHour
                         }
 
-                        // Actualizamos el estado a "Éxito" con los datos procesados
                         _uiState.value = PriceUiState.Success(
                             currentPrice = currentPriceData?.value ?: 0.0,
                             cheapestHour = cheapestHour,
@@ -99,11 +82,9 @@ class MainViewModel : ViewModel() {
                         _uiState.value = PriceUiState.Error("No se encontraron precios para hoy.")
                     }
                 } else {
-                    // Si la respuesta no fue exitosa, mostramos un error
                     _uiState.value = PriceUiState.Error("Error ${response.code()}: ${response.message()}")
                 }
             } catch (e: Exception) {
-                // Si hubo un problema de conexión o de otro tipo
                 _uiState.value = PriceUiState.Error("Error de conexión: ${e.message}")
             }
         }

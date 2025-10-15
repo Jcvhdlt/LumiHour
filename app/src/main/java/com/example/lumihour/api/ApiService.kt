@@ -7,9 +7,10 @@ import retrofit2.http.Query
 interface ApiService {
     @GET("datos/mercados/precios-mercados-tiempo-real")
     suspend fun getElectricityPrices(
-        @Header("Authorization") token: String,
+        @Header("x-api-key") apiKey: String,
         @Query("start_date") startDate: String,
         @Query("end_date") endDate: String,
         @Query("time_trunc") timeTrunc: String = "hour"
     ): Response<PriceResponse>
+
 }
